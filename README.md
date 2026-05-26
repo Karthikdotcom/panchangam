@@ -52,3 +52,4 @@ No frameworks, no dependencies, no build step. Pure HTML + CSS + JS in a single 
 - Solar position: NOAA algorithm (in-browser, no API)
 - Fonts: [Fraunces](https://fonts.google.com/specimen/Fraunces) + [Newsreader](https://fonts.google.com/specimen/Newsreader) via Google Fonts
 - Hosting: GitHub Pages
+# panchangam
