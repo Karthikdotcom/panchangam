@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#faf6ef">
+<title>Daily Timings · Sunnyvale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  /* ==========================================================================
+     DESIGN TOKENS
+     All colours live here. Edit these to re-skin the whole app.
+     ========================================================================== */
+  :root {
+    /* Background tones — warm off-white paper feel */
+    --paper:          #faf6ef;
+    --paper-deep:     #f3ecdf;
+
+    /* Text hierarchy */
+    --ink:            #2a2622;   /* headings, primary text */
+    --ink-soft:       #6b6258;   /* secondary labels */
+    --ink-faint:      #a89d8d;   /* captions, sub-labels */
+
+    /* Structural lines */
+    --line:           #e4dac8;   /* card borders */
+    --rule:           #d8cbb3;   /* horizontal rules */
+    --shadow:         rgba(60,48,30,.08);
+
+    /* Accent — gold used for the pulsing dot, glyphs, "now" badge */
+    --gold:           #b08428;
+    --gold-soft:      #c9a455;
+
+    /* Period colours */
+    --inauspicious:    #9c4a32;  /* Rahu / Yama / Gulika — terracotta red */
+    --inauspicious-bg: #f7e9e2;
+    --auspicious:      #4a6b3f;  /* Abhijit — forest green */
+    --auspicious-bg:   #e9efe2;
+  }
+
+  /* ==========================================================================
+     RESET & BASE
+     ========================================================================== */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    background: var(--paper);
+    /* Subtle warm/cool tint blobs — purely decorative */
+    background-image:
+      radial-gradient(circle at 18% 12%, rgba(176,132,40,.05), transparent 38%),
+      radial-gradient(circle at 82% 78%, rgba(74,107,63,.045), transparent 42%);
+    color: var(--ink);
+    font-family: 'Newsreader', Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: clamp(20px,5vw,64px) clamp(16px,4vw,40px);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* SVG noise texture overlay — adds paper grain without an image file */
+  .grain {
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  }
+  .sheet { position:relative; z-index:1; width:100%; max-width:680px; }
+
+  /* ==========================================================================
+     MASTHEAD — title, location, date, live clock
+     ========================================================================== */
+  header { text-align:center; margin-bottom:clamp(28px,5vw,46px); }
+
+  /* Small all-caps label above the title */
+  .eyebrow {
+    font-family:'Fraunces',serif; font-weight:500; font-size:.72rem;
+    letter-spacing:.34em; text-transform:uppercase; color:var(--gold);
+    margin-bottom:14px;
+  }
+  .eyebrow::before, .eyebrow::after { content:"·"; margin:0 .7em; color:var(--gold-soft); }
+
+  h1 {
+    font-family:'Fraunces',serif; font-weight:300; font-style:italic;
+    font-size:clamp(2.4rem,8vw,3.6rem); line-height:1; letter-spacing:-.01em;
+    margin-bottom:18px;
+  }
+
+  /* "Sunnyvale, California · Pacific Daylight Time" */
+  .place {
+    font-size:.95rem; color:var(--ink-soft); letter-spacing:.02em;
+    display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  }
+  .place .dot { width:4px; height:4px; border-radius:50%; background:var(--ink-faint); }
+
+  .datewrap { margin-top:26px; }
+  .weekday {
+    font-family:'Fraunces',serif; font-weight:500; font-size:1.05rem;
+    letter-spacing:.22em; text-transform:uppercase; color:var(--ink);
+  }
+  .fulldate { font-style:italic; color:var(--ink-soft); font-size:1.05rem; margin-top:3px; }
+
+  /* Pill-shaped live clock with pulsing dot */
+  .clock {
+    margin-top:18px; display:inline-flex; align-items:baseline; gap:8px;
+    padding:9px 20px; border:1px solid var(--line); border-radius:999px;
+    background:rgba(255,255,255,.45);
+  }
+  .clock .live {
+    width:6px; height:6px; border-radius:50%; background:var(--gold);
+    align-self:center; animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{ opacity:.35; transform:scale(.85); } 50%{ opacity:1; transform:scale(1); } }
+  .clock .t   { font-family:'Fraunces',serif; font-weight:500; font-size:1.32rem; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+  .clock .s   { font-size:.9rem; color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+  .clock .mer { font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); }
+
+  /* ==========================================================================
+     LAYOUT HELPERS
+     ========================================================================== */
+  /* Fading horizontal rule — fades to transparent at both ends */
+  .rule { height:1px; background:linear-gradient(90deg,transparent,var(--rule) 18%,var(--rule) 82%,transparent); margin:clamp(24px,4vw,38px) 0; }
+  .rule.tight { margin:22px 0; }
+
+  /* Small all-caps section label */
+  .sec-head {
+    font-family:'Fraunces',serif; font-weight:500; font-size:.74rem;
+    letter-spacing:.28em; text-transform:uppercase; color:var(--ink-soft);
+    text-align:center; margin-bottom:22px;
+  }
+
+  /* ==========================================================================
+     SUNRISE / SUNSET ROW
+     ========================================================================== */
+  .sun { display:flex; justify-content:center; gap:clamp(28px,8vw,72px); text-align:center; margin-bottom:8px; }
+  .sun .lab  { font-family:'Fraunces',serif; font-size:.68rem; letter-spacing:.26em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:7px; }
+  .sun .val  { font-size:1.5rem; font-weight:400; letter-spacing:.01em; }
+  .sun .glyph{ font-size:.85rem; color:var(--gold); display:block; margin-bottom:4px; }
+
+  /* ==========================================================================
+     TIMING CARDS
+     Each period (Rahu, Yama, Gulika, Abhijit) renders as one of these.
+     .bad  = inauspicious (terracotta left border)
+     .good = auspicious   (green left border)
+     .now  = currently active (gold ring + "now" badge)
+     ========================================================================== */
+  .cards { display:flex; flex-direction:column; gap:14px; }
+  .card {
+    position:relative; display:flex; align-items:center; gap:18px;
+    padding:20px 22px; border:1px solid var(--line); border-radius:3px;
+    background:rgba(255,255,255,.4);
+    transition:transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s, border-color .35s;
+    /* Cards animate in on load */
+    opacity:0; transform:translateY(14px);
+    animation:rise .7s forwards cubic-bezier(.2,.7,.3,1);
+  }
+  .card:hover { transform:translateY(-2px); box-shadow:0 10px 30px -14px var(--shadow); border-color:var(--rule); }
+
+  /* Coloured left accent bar */
+  .card .accent { position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:3px; }
+  .card.bad  .accent { background:var(--inauspicious); }
+  .card.good .accent { background:var(--auspicious); }
+
+  /* Left column: period name, hint, tag */
+  .card .name  { flex:0 0 auto; min-width:140px; }
+  .card .title { font-family:'Fraunces',serif; font-size:1.18rem; font-weight:500; letter-spacing:.005em; }
+  .card .sub   { font-size:.82rem; color:var(--ink-faint); font-style:italic; margin-top:2px; }
+
+  /* Right column: time range + live countdown */
+  .card .time { margin-left:auto; text-align:right; font-size:1.18rem; letter-spacing:.01em; white-space:nowrap; }
+  .card .time .dash { color:var(--ink-faint); margin:0 .35em; }
+
+  /* Status line: "starts in 2h 14m 08s" / "ends in 32m 05s" / "ended for today" */
+  .card .dur { font-size:.74rem; color:var(--ink-faint); font-style:italic; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .card .status.active { font-style:normal; font-weight:500; }   /* currently running — make it pop */
+  .card.bad  .status.active { color:var(--inauspicious); }
+  .card.good .status.active { color:var(--auspicious); }
+  .card .status.done { opacity:.55; }                            /* already passed — fade it */
+
+  /* Inauspicious / Auspicious badge */
+  .tag {
+    display:inline-block; font-family:'Fraunces',serif; font-size:.6rem; letter-spacing:.2em;
+    text-transform:uppercase; padding:3px 8px; border-radius:2px; margin-top:6px;
+  }
+  .card.bad  .tag { color:var(--inauspicious); background:var(--inauspicious-bg); }
+  .card.good .tag { color:var(--auspicious);   background:var(--auspicious-bg); }
+
+  /* Gold ring + "now" floating badge for the active period */
+  .card.now { box-shadow:0 0 0 1px var(--gold-soft), 0 14px 34px -16px var(--shadow); }
+  .card.now::after {
+    content:"now"; position:absolute; top:-9px; right:18px;
+    font-family:'Fraunces',serif; font-size:.58rem; letter-spacing:.24em; text-transform:uppercase;
+    background:var(--gold); color:#fff; padding:3px 9px; border-radius:2px;
+  }
+
+  @keyframes rise { to{ opacity:1; transform:none; } }
+
+  /* ==========================================================================
+     UPCOMING RAHU KALAM — next 6 days
+     ========================================================================== */
+  .week { display:flex; flex-direction:column; }
+  .week-row {
+    display:grid; grid-template-columns:1fr auto; gap:12px; align-items:baseline;
+    padding:11px 2px; border-bottom:1px solid var(--line);
+  }
+  .week-row:last-child { border-bottom:none; }
+  .week-row .wd       { font-family:'Fraunces',serif; font-weight:500; font-size:.95rem; }
+  .week-row .wd small { color:var(--ink-faint); font-weight:400; font-style:italic; margin-left:8px; font-family:'Newsreader',serif; }
+  .week-row .rk       { font-size:.92rem; color:var(--inauspicious); white-space:nowrap; }
+
+  /* ==========================================================================
+     FOOTER
+     ========================================================================== */
+  footer {
+    text-align:center; margin-top:clamp(34px,6vw,54px); padding-top:24px;
+    border-top:1px solid var(--line);
+    font-size:.78rem; color:var(--ink-faint); font-style:italic; line-height:1.7;
+  }
+  footer .meth { font-style:normal; letter-spacing:.04em; }
+  .save-hint   { margin-top:10px; font-size:.72rem; }
+
+  /* ==========================================================================
+     MOBILE — below 480px the time range wraps below the period name
+     ========================================================================== */
+  @media (max-width:480px) {
+    .card { flex-wrap:wrap; gap:6px 18px; padding:16px 18px; }
+    .card .name { min-width:0; }
+    .card .time { flex-basis:100%; text-align:left; margin-left:13px; }
+    .sun { gap:36px; }
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<main class="sheet">
+
+  <header>
+    <div class="eyebrow">Panchāngam</div>
+    <h1>Daily Timings</h1>
+    <div class="place">
+      <span id="place">Sunnyvale, California</span>
+      <span class="dot"></span>
+      <span id="tz">Pacific Time</span>
+    </div>
+    <div class="datewrap">
+      <div class="weekday" id="weekday">—</div>
+      <div class="fulldate" id="fulldate">—</div>
+      <div class="clock">
+        <span class="live"></span>
+        <span class="t"   id="clock-t">—</span>
+        <span class="s"   id="clock-s">00</span>
+        <span class="mer" id="clock-mer"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="rule"></div>
+
+  <!-- Sunrise & Sunset -->
+  <section class="sun">
+    <div>
+      <div class="lab">Sunrise</div>
+      <span class="glyph">☀</span>
+      <div class="val" id="sunrise">—</div>
+    </div>
+    <div>
+      <div class="lab">Sunset</div>
+      <span class="glyph">☾</span>
+      <div class="val" id="sunset">—</div>
+    </div>
+  </section>
+
+  <div class="rule tight"></div>
+
+  <!-- Today's four periods -->
+  <div class="sec-head">Periods to Avoid &nbsp;·&nbsp; Auspicious Windows</div>
+  <section class="cards" id="cards"></section>
+
+  <div class="rule"></div>
+
+  <!-- Rahu Kalam for the next 6 days -->
+  <div class="sec-head">Rāhu Kālam · Coming Days</div>
+  <section class="week" id="week"></section>
+
+  <footer>
+    <span class="meth">Computed locally from NOAA solar position · sunrise-to-sunset eighths method.</span><br>
+    Times follow your device clock &amp; auto-adjust for Daylight Saving.<br>
+    <span class="save-hint">Tip — "Add to Home Screen" to open it like an app each morning.</span>
+  </footer>
+
+</main>
+<script>
+/* ==========================================================================
+   CONFIG — the only things you'd ever need to change
+   ========================================================================== */
+const LOCATION = {
+  name: "Sunnyvale, California",
+  lat:   37.3688,   // decimal degrees N
+  lng: -122.0363,   // decimal degrees E (negative = West)
+};
+
+/* ==========================================================================
+   NOAA SOLAR POSITION ALGORITHM
+   Computes accurate sunrise & sunset for any date/location.
+   Returns { sunrise: Date, sunset: Date } in local time (device timezone).
+   On extreme latitudes returns { polar: "day" } or { polar: "night" } instead.
+
+   Reference: https://gml.noaa.gov/grad/solcalc/solareqns.PDF
+   ========================================================================== */
+const rad = Math.PI / 180;
+
+/** Unix ms → Julian Day Number */
+function toJulian(date)  { return date.valueOf() / 86400000 - 0.5 + 2440588; }
+/** Julian Day Number → Date */
+function fromJulian(j)   { return new Date((j + 0.5 - 2440588) * 86400000); }
+
+function sunTimes(date, lat, lng) {
+  // Use local noon as the anchor point for the Julian calculation
+  const d0    = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+  const J     = toJulian(d0);
+  const n     = Math.round(J - 2451545.0 + 0.0008);
+  const Jstar = n - lng / 360;                                   // mean solar noon
+
+  // Solar mean anomaly
+  const M  = (357.5291 + 0.98560028 * Jstar) % 360;
+  const Mr = M * rad;
+
+  // Equation of centre (accounts for elliptical orbit)
+  const C = 1.9148 * Math.sin(Mr) + 0.0200 * Math.sin(2 * Mr) + 0.0003 * Math.sin(3 * Mr);
+
+  // Ecliptic longitude & solar transit
+  const lambda   = (M + C + 180 + 102.9372) % 360;
+  const lr       = lambda * rad;
+  const Jtransit = 2451545.0 + Jstar + 0.0053 * Math.sin(Mr) - 0.0069 * Math.sin(2 * lr);
+
+  // Sun's declination
+  const delta = Math.asin(Math.sin(lr) * Math.sin(23.4397 * rad));
+
+  // Hour angle at sunrise/sunset (-0.833° accounts for atmospheric refraction + solar disc)
+  const latR = lat * rad;
+  const h0   = -0.833 * rad;
+  const cosH = (Math.sin(h0) - Math.sin(latR) * Math.sin(delta)) / (Math.cos(latR) * Math.cos(delta));
+
+  if (cosH >  1) return { polar: "night" };  // sun never rises (arctic winter)
+  if (cosH < -1) return { polar: "day"   };  // sun never sets  (arctic summer)
+
+  const H    = Math.acos(cosH) / rad;
+  const Jset = 2451545.0 + (Jstar + H / 360) + 0.0053 * Math.sin(Mr) - 0.0069 * Math.sin(2 * lr);
+  const Jrise = Jtransit - (Jset - Jtransit);  // symmetric around solar noon
+
+  return { sunrise: fromJulian(Jrise), sunset: fromJulian(Jset) };
+}
+
+/* ==========================================================================
+   PANCHANGAM TABLES
+   Weekday slot assignments (1-indexed) for each period.
+   Each "slot" is one of the 8 equal eighths of daylight (sunrise → sunset).
+
+   Day index follows JS getDay(): 0=Sunday, 1=Monday, … 6=Saturday.
+
+   Sources: traditional South Indian panchangam (Drik method).
+   ========================================================================== */
+//                 Sun  Mon  Tue  Wed  Thu  Fri  Sat
+const RAHU   = {   0:8, 1:2, 2:7, 3:5, 4:6, 5:4, 6:3 };
+const YAMA   = {   0:5, 1:4, 2:3, 3:2, 4:1, 5:7, 6:6 };
+const GULIKA = {   0:7, 1:6, 2:5, 3:4, 4:3, 5:2, 6:1 };
+
+/* ==========================================================================
+   CALCULATION HELPERS
+   ========================================================================== */
+
+/**
+ * Return {start, end} Date objects for the given 1-indexed slot
+ * of the 8 equal daytime divisions between sunrise and sunset.
+ */
+function segment(sunrise, sunset, slot) {
+  const part  = (sunset - sunrise) / 8;
+  const start = new Date(sunrise.getTime() + part * (slot - 1));
+  const end   = new Date(sunrise.getTime() + part * slot);
+  return { start, end };
+}
+
+/**
+ * Abhijit Muhurta — the most auspicious window of the day.
+ * Daylight is divided into 15 muhurtas; the 8th straddles local solar noon.
+ */
+function abhijit(sunrise, sunset) {
+  const part = (sunset - sunrise) / 15;
+  return {
+    start: new Date(sunrise.getTime() + part * 7),
+    end:   new Date(sunrise.getTime() + part * 8),
+  };
+}
+
+/** Format a Date as "9:28 AM" */
+const fmtTime = d => d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+
+/**
+ * Format a countdown in milliseconds as a human string:
+ * "1h 24m 05s"  /  "8m 12s"  /  "47s"
+ */
+function countdown(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h  = Math.floor(total / 3600);
+  const m  = Math.floor((total % 3600) / 60);
+  const s  = total % 60;
+  const ss = String(s).padStart(2, '0');
+  if (h) return `${h}h ${String(m).padStart(2, '0')}m ${ss}s`;
+  if (m) return `${m}m ${ss}s`;
+  return `${s}s`;
+}
+
+/* ==========================================================================
+   RENDER
+   Rebuilds the entire page once per minute (and on first load).
+   The per-second countdown is handled separately in tick() to avoid
+   thrashing the DOM on every second.
+   ========================================================================== */
+function render() {
+  const now = new Date();
+  const wd  = now.getDay();
+  const st  = sunTimes(now, LOCATION.lat, LOCATION.lng);
+
+  // ── Masthead ──────────────────────────────────────────────────────────────
+  document.getElementById('place').textContent = LOCATION.name;
+  document.getElementById('tz').textContent =
+    new Intl.DateTimeFormat('en-US', { timeZoneName:'long' })
+      .formatToParts(now).find(p => p.type === 'timeZoneName').value;
+  document.getElementById('weekday').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long' });
+  document.getElementById('fulldate').textContent =
+    now.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+
+  // ── Polar guard (won't trigger for Sunnyvale, but keeps logic safe) ───────
+  if (st.polar) {
+    document.getElementById('sunrise').textContent = st.polar === 'day' ? 'No sunset' : 'No sunrise';
+    document.getElementById('sunset').textContent  = '—';
+    return;
+  }
+
+  // ── Sunrise / Sunset ──────────────────────────────────────────────────────
+  document.getElementById('sunrise').textContent = fmtTime(st.sunrise);
+  document.getElementById('sunset').textContent  = fmtTime(st.sunset);
+
+  // ── Compute today's periods ───────────────────────────────────────────────
+  const rahu = segment(st.sunrise, st.sunset, RAHU[wd]);
+  const yama = segment(st.sunrise, st.sunset, YAMA[wd]);
+  const gul  = segment(st.sunrise, st.sunset, GULIKA[wd]);
+  const abh  = abhijit(st.sunrise, st.sunset);
+
+  // Period definitions — add, remove, or reorder rows here
+  const rows = [
+    { cls:'bad',  title:'Rāhu Kālam',      sub:'Avoid new ventures',        p:rahu, tag:'Inauspicious' },
+    { cls:'bad',  title:'Yamagandam',       sub:'Avoid important starts',    p:yama, tag:'Inauspicious' },
+    { cls:'bad',  title:'Gulika Kālam',     sub:'Outcomes tend to repeat',   p:gul,  tag:'Inauspicious' },
+    { cls:'good', title:'Abhijit Muhūrta',  sub:'Most auspicious window',    p:abh,  tag:'Auspicious'   },
+  ];
+
+  // ── Build cards ───────────────────────────────────────────────────────────
+  // We store start/end as data-* attributes so tick() can update the
+  // countdown every second without rebuilding the whole DOM.
+  const wrap = document.getElementById('cards');
+  wrap.innerHTML = '';
+  rows.forEach((r, i) => {
+    const live = (now >= r.p.start && now < r.p.end);
+    const el   = document.createElement('div');
+    el.className        = `card ${r.cls}${live ? ' now' : ''}`;
+    el.dataset.start    = r.p.start.getTime();
+    el.dataset.end      = r.p.end.getTime();
+    el.style.animationDelay = (i * 0.09) + 's';
+    el.innerHTML = `
+      <span class="accent"></span>
+      <div class="name">
+        <div class="title">${r.title}</div>
+        <div class="sub">${r.sub}</div>
+        <span class="tag">${r.tag}</span>
+      </div>
+      <div class="time">
+        ${fmtTime(r.p.start)}<span class="dash">–</span>${fmtTime(r.p.end)}
+        <div class="dur status"></div>
+      </div>`;
+    wrap.appendChild(el);
+  });
+
+  // Populate countdowns immediately (tick() will keep them live from here)
+  updateStatuses();
+
+  // ── Upcoming 6 days of Rahu Kalam ─────────────────────────────────────────
+  const week = document.getElementById('week');
+  week.innerHTML = '';
+  for (let i = 1; i <= 6; i++) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const s   = sunTimes(day, LOCATION.lat, LOCATION.lng);
+    if (s.polar) continue;
+    const rk  = segment(s.sunrise, s.sunset, RAHU[day.getDay()]);
+    const row = document.createElement('div');
+    row.className = 'week-row';
+    row.innerHTML = `
+      <div class="wd">${day.toLocaleDateString('en-US', { weekday:'long' })}
+        <small>${day.toLocaleDateString('en-US', { month:'short', day:'numeric' })}</small>
+      </div>
+      <div class="rk">${fmtTime(rk.start)} – ${fmtTime(rk.end)}</div>`;
+    week.appendChild(row);
+  }
+}
+
+// Full re-render once per minute (handles the midnight rollover too)
+render();
+setInterval(render, 60 * 1000);
+
+/* ==========================================================================
+   LIVE COUNTDOWNS
+   Runs every second via tick(). Reads timestamps from data-* attributes
+   instead of recomputing the sun position, so it's very cheap.
+
+   Status line states:
+     "starts in 2h 14m 08s"  — period hasn't started yet
+     "ends in 32m 05s"        — currently inside the period   (bold + coloured)
+     "ended for today"        — period has passed             (faded)
+   ========================================================================== */
+function updateStatuses() {
+  const t = Date.now();
+  document.querySelectorAll('#cards .card').forEach(card => {
+    const start = +card.dataset.start;
+    const end   = +card.dataset.end;
+    const el    = card.querySelector('.status');
+    const isNow = (t >= start && t < end);
+
+    card.classList.toggle('now', isNow);
+
+    if (t < start) {
+      el.textContent = `starts in ${countdown(start - t)}`;
+      el.className   = 'dur status';
+    } else if (isNow) {
+      el.textContent = `ends in ${countdown(end - t)}`;
+      el.className   = 'dur status active';
+    } else {
+      el.textContent = 'ended for today';
+      el.className   = 'dur status done';
+    }
+  });
+}
+
+/* ==========================================================================
+   LIVE CLOCK
+   Ticks every second. Kept separate from render() so the heavy DOM rebuild
+   only happens once a minute.
+   ========================================================================== */
+function tick() {
+  const now = new Date();
+  let   h   = now.getHours();
+  const mer = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+
+  document.getElementById('clock-t').textContent   = `${h}:${m}`;
+  document.getElementById('clock-s').textContent   = s;
+  document.getElementById('clock-mer').textContent = mer;
+
+  updateStatuses();
+}
+
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
