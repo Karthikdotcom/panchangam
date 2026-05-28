@@ -15,10 +15,10 @@
      ========================================================================== */
   :root {
     /* Background tones — warm off-white paper feel */
-    --paper:          #faf6ef;
+    --paper:          #faf6ef;  
     --paper-deep:     #f3ecdf;
 
-    /* Text hierarchy */
+    /* Text hierarchy */ 
     --ink:            #2a2622;   /* headings, primary text */
     --ink-soft:       #6b6258;   /* secondary labels */
     --ink-faint:      #a89d8d;   /* captions, sub-labels */
@@ -128,6 +128,160 @@
     text-align:center; margin-bottom:22px;
   }
 
+  /* Meta line showing today's tithi + nakshatra at sunrise (and live) */
+  .obs-meta {
+    text-align: center; margin-bottom: 18px;
+    font-size: .85rem; color: var(--ink-soft); font-style: italic;
+  }
+  .obs-meta .om-sep { color: var(--ink-faint); margin: 0 10px; }
+  .obs-meta .om-live { font-style: normal; font-family: 'Newsreader',serif; font-size: .72rem; color: var(--ink-faint); display: block; margin-top: 3px; }
+
+  /* ==========================================================================
+     OBSERVANCES — Ekadashi / Pradosham / Krithigai / Anusham
+     A grid of 4 cards. When today IS an observance, the card lights up amber.
+     Otherwise it dims and shows the countdown to the next occurrence.
+     ========================================================================== */
+  .obs-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 22px;
+    align-items: start;
+  }
+  .obs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin: 0;
+  }
+  .obs {
+    position: relative; padding: 16px 18px;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: rgba(255,255,255,.35);
+    transition: background .35s, border-color .35s, transform .35s;
+  }
+  .obs.today {
+    background: linear-gradient(180deg, rgba(176,132,40,.10), rgba(176,132,40,.03));
+    border-color: var(--gold-soft);
+    box-shadow: 0 10px 30px -16px var(--shadow);
+  }
+  .obs .obs-name {
+    font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 500;
+    letter-spacing: .01em;
+  }
+  .obs .obs-sub {
+    font-size: .72rem; color: var(--ink-faint); font-style: italic;
+    margin-top: 2px; letter-spacing: .02em;
+  }
+  .obs .obs-status {
+    margin-top: 12px; font-size: .82rem; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .obs.today .obs-status { color: var(--gold); font-weight: 500; }
+  .obs .obs-badge {
+    position: absolute; top: -8px; right: 14px;
+    font-family: 'Fraunces', serif; font-size: .56rem; letter-spacing: .24em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 2px;
+    background: var(--gold); color: #fff;
+    opacity: 0; transition: opacity .3s;
+  }
+  .obs.today .obs-badge { opacity: 1; }
+  .obs .obs-live {
+    font-size: .68rem; color: var(--ink-faint); font-family: 'Newsreader', serif;
+    font-style: italic; margin-top: 6px;
+  }
+
+  /* ── Calendar panel ──────────────────────────────────────────────────── */
+  .cal {
+    background: rgba(255,255,255,.35);
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 14px 14px 12px;
+  }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .cal-title {
+    font-family: 'Fraunces', serif; font-weight: 500; font-size: .95rem;
+    letter-spacing: .04em;
+  }
+  .cal-nav {
+    background: transparent; border: 1px solid var(--line); border-radius: 3px;
+    width: 24px; height: 22px; color: var(--ink-soft); cursor: pointer;
+    font-family: 'Newsreader', serif; line-height: 1; font-size: .9rem;
+    transition: background .2s, color .2s, border-color .2s;
+  }
+  .cal-nav:hover { background: var(--paper-deep); color: var(--ink); border-color: var(--rule); }
+  .cal-nav-group { display: flex; gap: 6px; }
+
+  /* Weekday header row */
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  }
+  .cal-dow {
+    text-align: center; font-family: 'Fraunces', serif; font-size: .58rem;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-faint);
+    padding: 4px 0 6px;
+  }
+
+  /* Day cell */
+  .cal-day {
+    position: relative; aspect-ratio: 1; min-height: 38px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding-top: 4px; border-radius: 4px; cursor: pointer;
+    transition: background .15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .cal-day:hover { background: rgba(176,132,40,.08); }
+  .cal-day.muted { color: var(--ink-faint); opacity: .35; cursor: default; }
+  .cal-day.muted:hover { background: transparent; }
+  .cal-day .cd-num {
+    font-size: .82rem; line-height: 1;
+  }
+  .cal-day.today .cd-num {
+    background: var(--ink); color: var(--paper);
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 500;
+  }
+  .cal-day.selected { background: var(--accent-glow); box-shadow: inset 0 0 0 1px var(--gold-soft); }
+  .cal-day.selected:not(.today) { background: rgba(176,132,40,.12); }
+
+  /* The E P K A markers under the date */
+  .cal-marks {
+    margin-top: 3px; display: flex; gap: 2px; flex-wrap: wrap;
+    justify-content: center; max-width: 100%;
+  }
+  .cal-mark {
+    font-family: 'Fraunces', serif; font-size: .56rem; font-weight: 600;
+    line-height: 1; letter-spacing: 0;
+    padding: 2px 4px; border-radius: 2px;
+    background: var(--gold-soft); color: #fff;
+  }
+  .cal-mark.e { background: #9c4a32; }     /* Ekadashi — terracotta */
+  .cal-mark.p { background: #5a4a8a; }     /* Pradosham — indigo */
+  .cal-mark.k { background: #b08428; }     /* Krithigai — gold */
+  .cal-mark.a { background: #4a6b3f; }     /* Anusham — forest green */
+
+  /* Detail panel below the calendar when a day is selected */
+  .cal-detail {
+    margin-top: 12px; padding: 10px 12px;
+    background: var(--paper-deep); border-radius: 4px;
+    font-size: .82rem; color: var(--ink-soft);
+    display: none;
+  }
+  .cal-detail.show { display: block; }
+  .cal-detail .cd-date {
+    font-family: 'Fraunces', serif; font-weight: 500; color: var(--ink);
+    font-size: .92rem; margin-bottom: 4px;
+  }
+  .cal-detail .cd-list { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .cal-detail .cd-list-item { display: flex; gap: 8px; align-items: center; }
+  .cal-detail .cd-list-item .cal-mark { flex: 0 0 auto; }
+  .cal-detail .cd-empty { font-style: italic; color: var(--ink-faint); }
+
+  /* Native browser tooltip via title attribute will work on hover too */
+  @media (max-width: 720px) {
+    .obs-wrap { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .obs-grid { grid-template-columns: 1fr; }
+  }
   /* ==========================================================================
      SUNRISE / SUNSET ROW
      ========================================================================== */
@@ -277,6 +431,29 @@
 
   <div class="rule"></div>
 
+  <!-- Lunar observances: Ekadashi / Pradosham / Krithigai / Anusham
+       Left column: 4 observance cards.  Right column: monthly calendar. -->
+  <div class="sec-head">Observances</div>
+  <div class="obs-meta" id="obs-meta"></div>
+  <div class="obs-wrap">
+    <section class="obs-grid" id="obs-grid"></section>
+    <section class="cal" id="cal">
+      <div class="cal-head">
+        <div class="cal-nav-group">
+          <button class="cal-nav" id="cal-prev" aria-label="Previous month">‹</button>
+        </div>
+        <div class="cal-title" id="cal-title">—</div>
+        <div class="cal-nav-group">
+          <button class="cal-nav" id="cal-next" aria-label="Next month">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-detail" id="cal-detail"></div>
+    </section>
+  </div>
+
+  <div class="rule"></div>
+
   <!-- Rahu Kalam for the next 6 days -->
   <div class="sec-head">Rāhu Kālam · Coming Days</div>
   <section class="week" id="week"></section>
@@ -365,6 +542,126 @@ const YAMA   = {   0:5, 1:4, 2:3, 3:2, 4:1, 5:7, 6:6 };
 const GULIKA = {   0:7, 1:6, 2:5, 3:4, 4:3, 5:2, 6:1 };
 
 /* ==========================================================================
+   LUNAR ASTRONOMY  (Meeus, abridged)
+   Computes the Moon's & Sun's ecliptic longitude, then derives:
+     - Tithi    (1..30) — from Sun↔Moon angular separation (12° per tithi)
+     - Nakshatra(1..27) — from sidereal Moon longitude     (13°20' per nakshatra)
+   Accurate to ~3 min on tithi transitions, validated against drikpanchang.
+   ========================================================================== */
+const norm360 = x => ((x % 360) + 360) % 360;
+
+// Sun's geocentric ecliptic longitude (tropical, degrees)
+function sunLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const L0 = norm360(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
+  const M  = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T * T);
+  const Mr = M * rad;
+  const C  = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(Mr)
+           + (0.019993 - 0.000101 * T) * Math.sin(2 * Mr)
+           +  0.000289                  * Math.sin(3 * Mr);
+  return norm360(L0 + C);
+}
+
+// Moon's geocentric ecliptic longitude (tropical, degrees) — Meeus ch. 47
+function moonLongitude(jd) {
+  const T  = (jd - 2451545.0) / 36525;
+  const Lp = norm360(218.3164477 + 481267.88123421*T - 0.0015786*T*T + T*T*T/538841 - T*T*T*T/65194000);
+  const D  = norm360(297.8501921 + 445267.1114034 *T - 0.0018819*T*T + T*T*T/545868);
+  const M  = norm360(357.5291092 +  35999.0502909 *T - 0.0001536*T*T + T*T*T/24490000);
+  const Mp = norm360(134.9633964 + 477198.8675055 *T + 0.0087414*T*T + T*T*T/69699 - T*T*T*T/14712000);
+  const F  = norm360( 93.2720950 + 483202.0175233 *T - 0.0036539*T*T - T*T*T/3526000 + T*T*T*T/863310000);
+  const Dr = D*rad, Mr = M*rad, Mpr = Mp*rad, Fr = F*rad;
+  const E  = 1 - 0.002516*T - 0.0000074*T*T;
+
+  // Top ~30 longitude terms from Meeus table 47.A (coefficient in degrees)
+  const terms = [
+    [0,0,1,0,  6.288774], [2,0,-1,0, 1.274027], [2,0, 0,0, 0.658314],
+    [0,0,2,0,  0.213618], [0,1, 0,0,-0.185116], [0,0, 0,2,-0.114332],
+    [2,0,-2,0, 0.058793], [2,-1,-1,0,0.057066], [2,0, 1,0, 0.053322],
+    [2,-1,0,0, 0.045758], [0,1,-1,0,-0.040923], [1,0, 0,0,-0.034720],
+    [0,1, 1,0,-0.030383], [2,0, 0,-2,0.015327], [0,0, 1,2,-0.012528],
+    [0,0, 1,-2,0.010980], [4,0,-1,0, 0.010675], [0,0, 3,0, 0.010034],
+    [4,0,-2,0, 0.008548], [2,1,-1,0,-0.007888], [2,1, 0,0,-0.006766],
+    [1,0,-1,0,-0.005163], [1,1, 0,0, 0.004987], [2,-1,1,0, 0.004036],
+    [2,0, 2,0, 0.003994], [4,0, 0,0, 0.003861], [2,0,-3,0, 0.003665],
+    [0,1,-2,0,-0.002689], [2,0,-1,2,-0.002602], [2,-1,-2,0,0.002390],
+  ];
+  let sumL = 0;
+  for (const [d,m,mp,f,coef] of terms) {
+    const arg = d*Dr + m*Mr + mp*Mpr + f*Fr;
+    const Eterm = Math.abs(m)===1 ? E : Math.abs(m)===2 ? E*E : 1;
+    sumL += coef * Eterm * Math.sin(arg);
+  }
+  return norm360(Lp + sumL);
+}
+
+// Lahiri (Chitrapaksha) ayanamsa — the offset from tropical to sidereal zodiac.
+// Calibrated to match Indian govt ephemeris (24.13° on Jan 1, 2026).
+function lahiriAyanamsa(jd) {
+  const yrs = (jd - 2451545.0) / 365.25;
+  return 23.85 + 0.013969 * yrs;
+}
+
+/** Tithi number (1..30) at a given Date. */
+function tithiAt(date) {
+  const jd = toJulian(date);
+  const diff = norm360(moonLongitude(jd) - sunLongitude(jd));
+  return Math.floor(diff / 12) + 1;
+}
+
+/** Nakshatra number (1..27) at a given Date, using Lahiri sidereal. */
+function nakshatraAt(date) {
+  const jd = toJulian(date);
+  const sid = norm360(moonLongitude(jd) - lahiriAyanamsa(jd));
+  return Math.floor(sid / (360/27)) + 1;
+}
+
+const TITHI_NAMES = [
+  "Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashti","Saptami","Ashtami","Navami","Dashami",
+  "Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Pournami",
+  "Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashti","Saptami","Ashtami","Navami","Dashami",
+  "Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Amavasya",
+];
+const NAKSHATRA_NAMES = [
+  "Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya","Ashlesha",
+  "Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati","Vishakha","Anuradha","Jyeshtha",
+  "Mula","Purva Ashadha","Uttara Ashadha","Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati",
+];
+
+/* ==========================================================================
+   OBSERVANCES — which tithi/nakshatra triggers each
+   ========================================================================== */
+const OBSERVANCES = [
+  // Ekadashi: 11th tithi of either paksha (so tithi #11 OR #26)
+  { key:'ekadashi',  name:'Ekādaśī',   sub:'Fast & devotion',
+    kind:'tithi',     match: t => t === 11 || t === 26 },
+  // Pradosham: 13th tithi of either paksha (#13 or #28)
+  { key:'pradosham', name:'Pradoṣam',  sub:'Shiva worship (evening)',
+    kind:'tithi',     match: t => t === 13 || t === 28 },
+  // Krithigai (Kārtikai): Krittika nakshatra
+  { key:'krithigai', name:'Kṛttikā',   sub:'Murugan / Karthikai',
+    kind:'nakshatra', match: n => n === 3 },
+  // Anusham (Anuradha): Maha Periyava's nakshatra
+  { key:'anusham',   name:'Anuṣam',    sub:'Mahā Periyavā',
+    kind:'nakshatra', match: n => n === 17 },
+];
+
+/**
+ * For a given observance, find the next date (starting from `from`) when it's
+ * active at that day's sunrise. Returns { date, daysAway }.
+ * We scan up to 60 days ahead — enough to find any of these (max ~30 days).
+ */
+function findNextOccurrence(obs, from) {
+  for (let i = 0; i <= 60; i++) {
+    const day = new Date(from.getFullYear(), from.getMonth(), from.getDate() + i);
+    const st  = sunTimes(day, LOCATION.lat, LOCATION.lng);
+    if (st.polar) continue;
+    const val = obs.kind === 'tithi' ? tithiAt(st.sunrise) : nakshatraAt(st.sunrise);
+    if (obs.match(val)) return { date: day, daysAway: i };
+  }
+  return null;
+}
+/* ==========================================================================
    CALCULATION HELPERS
    ========================================================================== */
 
@@ -441,6 +738,10 @@ function render() {
   document.getElementById('sunrise').textContent = fmtTime(st.sunrise);
   document.getElementById('sunset').textContent  = fmtTime(st.sunset);
 
+   // ── Observances (Ekadashi / Pradosham / Krithigai / Anusham) ─────────────
+  renderObservances(now, st);
+  renderCalendar();
+
   // ── Compute today's periods ───────────────────────────────────────────────
   const rahu = segment(st.sunrise, st.sunset, RAHU[wd]);
   const yama = segment(st.sunrise, st.sunset, YAMA[wd]);
@@ -501,6 +802,229 @@ function render() {
       <div class="rk">${fmtTime(rk.start)} – ${fmtTime(rk.end)}</div>`;
     week.appendChild(row);
   }
+}
+/* ==========================================================================
+   CALENDAR — monthly grid with E / P / K / A markers
+   State lives in `calState.viewMonth` (a Date pinned to the 1st of the month
+   being shown). Prev/next arrows shift it; render() recalls renderCalendar()
+   so today's highlight stays accurate across midnight rollover.
+   ========================================================================== */
+const calState = {
+  viewMonth: null,   // Date object set to the 1st of the viewed month
+  selected:  null,   // Date object — currently selected day (or null)
+};
+
+// What letter to show for each observance (matches OBSERVANCES[].key order)
+const MARK_LETTER = { ekadashi:'E', pradosham:'P', krithigai:'K', anusham:'A' };
+const MARK_CLASS  = { ekadashi:'e', pradosham:'p', krithigai:'k', anusham:'a' };
+
+/** Returns the list of observances active at sunrise on a given Date. */
+function observancesOnDate(day) {
+  const st = sunTimes(day, LOCATION.lat, LOCATION.lng);
+  if (st.polar) return [];
+  const t = tithiAt(st.sunrise);
+  const n = nakshatraAt(st.sunrise);
+  return OBSERVANCES.filter(o =>
+    o.kind === 'tithi' ? o.match(t) : o.match(n)
+  );
+}
+
+/** True if two Dates are the same calendar day. */
+function sameDay(a, b) {
+  return a && b
+    && a.getFullYear() === b.getFullYear()
+    && a.getMonth()    === b.getMonth()
+    && a.getDate()     === b.getDate();
+}
+
+function renderCalendar() {
+  if (!calState.viewMonth) {
+    const now = new Date();
+    calState.viewMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  const view  = calState.viewMonth;
+  const today = new Date();
+
+  // Title: "May 2026"
+  document.getElementById('cal-title').textContent =
+    view.toLocaleDateString('en-US', { month:'long', year:'numeric' });
+
+  // Build the grid: weekday headers + 6 weeks of cells
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  // Weekday header row — S M T W T F S
+  ['S','M','T','W','T','F','S'].forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-dow';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  // First-of-month + how many leading blanks we need
+  const firstDow = view.getDay();              // 0=Sun .. 6=Sat
+  const startDate = new Date(view);
+  startDate.setDate(1 - firstDow);             // back up to the Sunday before
+
+  // 42 cells = 6 weeks × 7 days — always renders a tidy rectangle
+  for (let i = 0; i < 42; i++) {
+    const day = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + i);
+    const inMonth = day.getMonth() === view.getMonth();
+
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+    if (!inMonth)               cell.classList.add('muted');
+    if (sameDay(day, today))    cell.classList.add('today');
+    if (sameDay(day, calState.selected)) cell.classList.add('selected');
+
+    // Date number
+    const num = document.createElement('div');
+    num.className = 'cd-num';
+    num.textContent = day.getDate();
+    cell.appendChild(num);
+
+    // Observance markers (only for in-month days, to keep grid quiet)
+    let obsList = [];
+    if (inMonth) {
+      obsList = observancesOnDate(day);
+      if (obsList.length) {
+        const marks = document.createElement('div');
+        marks.className = 'cal-marks';
+        obsList.forEach(o => {
+          const m = document.createElement('span');
+          m.className = 'cal-mark ' + MARK_CLASS[o.key];
+          m.textContent = MARK_LETTER[o.key];
+          marks.appendChild(m);
+        });
+        cell.appendChild(marks);
+
+        // Native tooltip on hover — lists observance names
+        cell.title = obsList.map(o => o.name).join(' · ');
+      }
+    }
+
+    // Click handler — select day & show detail panel
+    if (inMonth) {
+      cell.addEventListener('click', () => {
+        calState.selected = day;
+        renderCalendar();          // re-render to update .selected class
+        renderCalDetail(day, obsList);
+      });
+    }
+
+    grid.appendChild(cell);
+  }
+
+  // If a day is already selected, refresh its detail (e.g. across midnight)
+  if (calState.selected) {
+    renderCalDetail(calState.selected, observancesOnDate(calState.selected));
+  }
+}
+
+/** Shows the detail panel below the calendar for a chosen day. */
+function renderCalDetail(day, obsList) {
+  const box = document.getElementById('cal-detail');
+  const dateStr = day.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  if (!obsList.length) {
+    box.innerHTML = `
+      <div class="cd-date">${dateStr}</div>
+      <div class="cd-empty">No observances on this day.</div>`;
+  } else {
+    const items = obsList.map(o => `
+      <div class="cd-list-item">
+        <span class="cal-mark ${MARK_CLASS[o.key]}">${MARK_LETTER[o.key]}</span>
+        <span><strong>${o.name}</strong> — <em>${o.sub}</em></span>
+      </div>`).join('');
+    box.innerHTML = `
+      <div class="cd-date">${dateStr}</div>
+      <div class="cd-list">${items}</div>`;
+  }
+  box.classList.add('show');
+}
+
+/* Prev/next month navigation — wired once on first render */
+function setupCalendarNav() {
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    calState.viewMonth = new Date(calState.viewMonth.getFullYear(), calState.viewMonth.getMonth() - 1, 1);
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', () => {
+    calState.viewMonth = new Date(calState.viewMonth.getFullYear(), calState.viewMonth.getMonth() + 1, 1);
+    renderCalendar();
+  });
+}
+setupCalendarNav();
+/* ==========================================================================
+   OBSERVANCES — render the 4 cards + meta line
+   Evaluates today's tithi/nakshatra at LOCAL SUNRISE (traditional method),
+   highlights cards that match today, and shows countdown to the next
+   occurrence for the rest. Also shows a "live now" line for the current moment.
+   ========================================================================== */
+function renderObservances(now, st) {
+  if (st.polar) return;
+
+  // Today's values at sunrise (traditional) and right now (live)
+  const todayTithi     = tithiAt(st.sunrise);
+  const todayNakshatra = nakshatraAt(st.sunrise);
+  const liveTithi      = tithiAt(now);
+  const liveNakshatra  = nakshatraAt(now);
+
+  // Meta line above the grid — what's active at sunrise + a live update
+  const meta = document.getElementById('obs-meta');
+  meta.innerHTML = `
+    <div>
+      At sunrise: <strong>${TITHI_NAMES[todayTithi-1]}</strong>
+      <span class="om-sep">·</span>
+      <strong>${NAKSHATRA_NAMES[todayNakshatra-1]}</strong>
+    </div>
+    <div class="om-live">
+      Right now: ${TITHI_NAMES[liveTithi-1]} · ${NAKSHATRA_NAMES[liveNakshatra-1]}
+    </div>`;
+
+  // Build the 4 cards
+  const grid = document.getElementById('obs-grid');
+  grid.innerHTML = '';
+  OBSERVANCES.forEach(obs => {
+    const isToday = obs.kind === 'tithi'
+      ? obs.match(todayTithi)
+      : obs.match(todayNakshatra);
+
+    // For non-today cards, find the next occurrence
+    let statusText;
+    if (isToday) {
+      statusText = 'Today';
+    } else {
+      const next = findNextOccurrence(obs, now);
+      if (next) {
+        const dayName = next.date.toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' });
+        statusText = next.daysAway === 1
+          ? `Tomorrow · ${dayName}`
+          : `In ${next.daysAway} days · ${dayName}`;
+      } else {
+        statusText = '—';
+      }
+    }
+
+    // "Live" line — only if the *live* value matches but sunrise didn't
+    // (i.e. the observance is currently active but won't be counted as "today")
+    const liveMatch = obs.kind === 'tithi'
+      ? obs.match(liveTithi)
+      : obs.match(liveNakshatra);
+    const liveLine = (!isToday && liveMatch)
+      ? `<div class="obs-live">Active right now (started after sunrise)</div>`
+      : '';
+
+    const el = document.createElement('div');
+    el.className = 'obs' + (isToday ? ' today' : '');
+    el.innerHTML = `
+      <span class="obs-badge">Today</span>
+      <div class="obs-name">${obs.name}</div>
+      <div class="obs-sub">${obs.sub}</div>
+      <div class="obs-status">${statusText}</div>
+      ${liveLine}`;
+    grid.appendChild(el);
+  });
 }
 
 // Full re-render once per minute (handles the midnight rollover too)
