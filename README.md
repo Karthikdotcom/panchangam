@@ -2,7 +2,7 @@
 
 A self-contained Hindu panchangam web app for Sunnyvale, CA. Shows daily timings (Rāhu Kālam, Yamagandam, Gulika Kālam, Abhijit Muhūrta), lunar observances (Ekādaśī, Pradoṣam, Kṛttikā, Anuṣam), and a monthly calendar marking observance days — all computed locally in the browser.
 
-🔗 **Live:** [karthikdotcom.github.io/panchangam](https://karthikdotcom.github.io/panchangam/)
+🔗 **Live:** [karthikdotcom.github.io/panchangam](https://karthikdotcom.github.io/Auspicious-Timings/)
 
 ## Features
 
